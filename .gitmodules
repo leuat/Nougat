@@ -1,0 +1,3 @@
+[submodule "GeometryLibrary"]
+	path = GeometryLibrary
+	url = git@github.com:leuat/GeometryLibrary.git
