@@ -69,7 +69,6 @@ bool CommandParser::CalculateDTAModel()
     CIniFile cf;
   /*  cout << "Loading parameter file " << modelParameters.toStdString() << endl;
     cf.load(modelParameters.toStdString().c_str());*/
-    cout << "Loading model parms" << endl;
     try {
         rm.parameters()->load(modelParameters);
 //        rm.loadParameters(&cf);
@@ -79,9 +78,7 @@ bool CommandParser::CalculateDTAModel()
         exit(1);
     }
 
-    cout << "Setting seed .." << endl;
     rm.parameters()->setValue("seed", seed);
-    cout << "Loading particle file.." << endl;
     particles.open(particleFilename.toStdString().c_str());
     // First, copy particles to single list
     if (particles.size()==0)
