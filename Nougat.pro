@@ -27,7 +27,8 @@ SOURCES += \
     GeometryLibrary/distancetoatom.cpp \
     GeometryLibrary/dtalikelihood.cpp \
     GeometryLibrary/particle.cpp \
-    nougat.cpp
+    nougat.cpp \
+    commandparser.cpp
 
 HEADERS += \
     GeometryLibrary/likelihood/graphstatistics.h \
@@ -54,4 +55,5 @@ HEADERS += \
     GeometryLibrary/simplexnoise.h \
     GeometryLibrary/distancetoatom.h \
     GeometryLibrary/dtalikelihood.h \
-    GeometryLibrary/particle.h
+    GeometryLibrary/particle.h \
+    commandparser.h
