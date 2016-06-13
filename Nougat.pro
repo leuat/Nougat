@@ -24,11 +24,15 @@ SOURCES += \
     GeometryLibrary/perlin.cpp \
     GeometryLibrary/simplex.cpp \
     GeometryLibrary/simplexnoise.cpp \
-    GeometryLibrary/distancetoatom.cpp \
     GeometryLibrary/dtalikelihood.cpp \
     GeometryLibrary/particle.cpp \
     nougat.cpp \
-    commandparser.cpp
+    commandparser.cpp \
+    GeometryLibrary/misc/distancetoatommap.cpp \
+    GeometryLibrary/misc/grid.cpp \
+    GeometryLibrary/misc/points.cpp \
+    GeometryLibrary/measures/distancetoatom.cpp \
+    GeometryLibrary/measures/measure.cpp
 
 HEADERS += \
     GeometryLibrary/likelihood/graphstatistics.h \
@@ -53,7 +57,11 @@ HEADERS += \
     GeometryLibrary/perlin.h \
     GeometryLibrary/simplex.h \
     GeometryLibrary/simplexnoise.h \
-    GeometryLibrary/distancetoatom.h \
     GeometryLibrary/dtalikelihood.h \
     GeometryLibrary/particle.h \
-    commandparser.h
+    commandparser.h \
+    GeometryLibrary/misc/distancetoatommap.h \
+    GeometryLibrary/misc/grid.h \
+    GeometryLibrary/misc/points.h \
+    GeometryLibrary/measures/distancetoatom.h \
+    GeometryLibrary/measures/measure.h

@@ -32,6 +32,8 @@ public:
 
     bool CalculateDTA();
     bool CalculateDTAModel();
+    bool DTAMapXYZ();
+
 
 };
 

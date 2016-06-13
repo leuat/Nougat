@@ -43,15 +43,14 @@ bool CommandParser::CalculateDTA()
     cout << "DTAing " << p.size() << " particles..." << endl;
 
     QVector<QVector3D> points;
-    p.getVector3DList(points);
+    p.appendToQVector3DList(points);
     DistanceToAtom da(randomDirections);
     da.compute(points, 30.0);
     QVector<QPointF> hist = da.histogram(100);
     LGraph g(hist);
+    g.normalizeArea();
     g.SaveText(outFile.toStdString());
-
     return true;
-
 }
 
 bool CommandParser::CalculateDTAModel()
@@ -100,13 +99,27 @@ bool CommandParser::CalculateDTAModel()
     da.compute(points, 30.0);
     QVector<QPointF> hist = da.histogram(100);
     LGraph g(hist);
+    g.normalizeArea();
     g.SaveText(outFile.toStdString());
 
     return true;
 
 }
 
+bool CommandParser::DTAMapXYZ() {
+/*#include "GeometryLibrary/misc/distancetoatommap.h"
+#include "GeometryLibrary/misc/points.h"
 
+QString xyz_filename = QString("/Users/anderhaf/Dropbox/uio/phd/2016/noisegeometry/states/sio2_100_systems_255katoms/system0.xyz");
+QString vtk_filename = QString("/Users/anderhaf/Dropbox/uio/phd/2016/noisegeometry/states/sio2_100_systems_255katoms/system0.vtk");
+Points p;
+p.readXYZ(filename);
+
+DistanceToAtomMap map(64, 64, 64);
+map.build(p.points(), 15);
+map.grid().toVTKFile(vtk_filename, p.systemSize());   */
+    return true;
+}
 
 CommandParser::CommandParser(int argc, char *argv[])
 {
@@ -126,6 +139,10 @@ CommandParser::CommandParser(int argc, char *argv[])
 
     if (command == "dta_model")
         ok = CalculateDTAModel();
+
+    if (command == "create_octree") {
+
+    }
 
     if (!ok)
         instructions();
