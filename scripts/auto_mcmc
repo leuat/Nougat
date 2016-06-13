@@ -1,0 +1,20 @@
+#!/bin/bash  
+python plot_mc.py mcmc 0 mc.txt persistence  
+python plot_mc.py mcmc 0 mc.txt threshold 
+python plot_mc.py mcmc 0 mc.txt scale 
+python plot_mc.py mcmc 0 mc.txt steepness 
+
+x=1024
+y=768
+
+dx=$((x /2))
+dy=$((y /2))
+
+convert -size ${x}x${y} xc:skyblue comp_resize.png
+composite -geometry ${dx}x${dy}+0+0 mcmc_chain_persistence.eps comp_resize.png comp_resize.png
+composite -geometry ${dx}x${dy}+${dx}+0 mcmc_chain_threshold.eps comp_resize.png comp_resize.png
+composite -geometry ${dx}x${dy}+0+${dy} mcmc_chain_scale.eps comp_resize.png comp_resize.png
+composite -geometry ${dx}x${dy}+${dx}+${dy} mcmc_chain_steepness.eps comp_resize.png comp_resize.png
+
+mv comp_resize.png mcmc.png
+open mcmc.png

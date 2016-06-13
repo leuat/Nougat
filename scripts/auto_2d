@@ -1,0 +1,47 @@
+#!/bin/bash  
+
+bins=25
+
+python plot_mc.py 2d 0 mc.txt persistence threshold $bins 
+echo "1/12"
+python plot_mc.py 2d 0 mc.txt persistence scale $bins 
+echo "2/12"
+python plot_mc.py 2d 0 mc.txt persistence steepness $bins 
+
+echo "3/12"
+python plot_mc.py 2d 0 mc.txt threshold scale $bins
+echo "4/12"
+python plot_mc.py 2d 0 mc.txt threshold steepness $bins
+
+echo "5/12"
+python plot_mc.py 2d 0 mc.txt scale steepness $bins
+echo "Combining..."
+x=2048
+y=1536
+
+dx=$((x /3))
+dy=$((y /3))
+
+dx2=$((dx *2))
+dy2=$((dy *2))
+
+
+
+convert -size ${x}x${y} xc:white comp_resize.png
+echo "6/12"
+composite -geometry ${dx}x${dy}+0+0 mcmc_2d_persistence_threshold.eps comp_resize.png comp_resize.png
+echo "7/12"
+composite -geometry ${dx}x${dy}+0+${dy} mcmc_2d_persistence_scale.eps comp_resize.png comp_resize.png
+echo "8/12"
+composite -geometry ${dx}x${dy}+0+${dy2} mcmc_2d_persistence_steepness.eps comp_resize.png comp_resize.png
+
+echo "9/12"
+composite -geometry ${dx}x${dy}+${dx}+${dy} mcmc_2d_threshold_scale.eps comp_resize.png comp_resize.png
+echo "10/12"
+composite -geometry ${dx}x${dy}+${dx}+${dy2} mcmc_2d_threshold_steepness.eps comp_resize.png comp_resize.png
+
+echo "11/12"
+composite -geometry ${dx}x${dy}+${dx2}+${dy2} mcmc_2d_scale_steepness.eps comp_resize.png comp_resize.png
+
+mv comp_resize.png 2d.png
+open 2d.png

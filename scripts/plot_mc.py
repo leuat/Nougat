@@ -4,6 +4,7 @@ import sys
 import os
 import math
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 
 dir = "../../build-NanoPores-Desktop_Qt_5_5_1_clang_64bit-Release/NanoPores/NanoPores.app/Contents/MacOS/"
 
@@ -119,10 +120,11 @@ def addToPlotSingle(data, ax, col, lbl, lw, col2):
 
 
 def chain(argv):
-	if (len(argv)<3):
+	if (len(argv)<1):
 		print "Error: mcmc must supply filename."
-		exit(1)
-	filename = sys.argv[2];
+		return False
+
+	filename = argv[0];
 	data = loadMcFile(dir + filename)
 
 	fig = plt.figure()
@@ -134,74 +136,120 @@ def chain(argv):
 	ax.set_ylabel('Value')
 	color = 0
 
+	last = 0
+	first = ""
 	for i, value in enumerate(argv):
-		if (i>=3):
+		if (i>=1):
+			if (first==""):
+				first = value
 			ax.plot(data["chains"], data[value], c=fcols[color], label=value, linewidth=lineWidth)
 			color+=1
 			if (color==len(fcols)):
 				color = 0
+			last = int(i)
 
 	leg = ax.legend()
-	plt.savefig('mcmc_chain.eps', format='eps', dpi=1000)
-	
-	plt.show()
-	exit(0)
-
+	plt.savefig('mcmc_chain_' + first + '.eps', format='eps', dpi=1000)
+	return True
 
 def likelihood1D(argv):
-	if (len(argv)<5):
+	if (len(argv)<3):
 		print "Error: likelihood must supply filename, parameter and # bins."
-		exit(1)
+		return False
 
-	filename = sys.argv[2];
+	filename = argv[0];
 	data = loadMcFile(dir + filename)
 
 	fig = plt.figure()
 
-	parameter = sys.argv[3];
-	bins = int(sys.argv[4]);
+	parameter = argv[1];
+	bins = int(argv[2]);
 
 	ax = fig.add_subplot(111)
 
 	ax.set_title("Likelihood")    
-	ax.set_xlabel('Chain')
-	ax.set_ylabel('Value')
+	ax.set_xlabel(parameter)
+	ax.set_ylabel('Likelihood')
 	
 	n, bins, patches = ax.hist(data[parameter], bins, label=parameter, linewidth=lineWidth, normed=1, histtype='stepfilled', color=fcols[0])
 
 	#print n
 
 	leg = ax.legend()
-	plt.savefig('mcmc_1d_ " + parameter  + ".eps', format='eps', dpi=1000)
+	plt.savefig('mcmc_1d_' + parameter  + '.eps', format='eps', dpi=1000)
 	
-	plt.show()
-	exit(0)
+	return True
+
+def likelihood2D(argv):
+	if (len(argv)<4):
+		print "Error: 2d likelihood must supply filename, 2x parameters and # bins."
+		exit(1)
+
+	filename = argv[0];
+	data = loadMcFile(dir + filename)
+
+	fig = plt.figure()
+
+	parameter1 = argv[1];
+	parameter2 = argv[2];
+	bins = int(argv[3]);
+
+	ax = fig.add_subplot(111)
+
+
+	ax.set_title("Likelihood")    
+	ax.set_xlabel(parameter1)
+	ax.set_ylabel(parameter2)
+	
+	h, x, y, p = plt.hist2d(data[parameter1], data[parameter2], bins = bins)
+	plt.clf()
+	plt.imshow(h, origin = "lower", interpolation = "nearest")
+	#n, bins = 	
+	#ax.hist2d(data[parameter1], data[parameter2], bins=bins, norm=LogNorm())
+#	H, xedges, yedges = np.histogram2d(data[parameter1], data[parameter2], bins=(bins, bins))
+#	print h
+#	plt.colorbar()
+
+
+	#print n
+
+#	leg = ax.legend()
+	plt.savefig('mcmc_2d_' + parameter1 +'_' + parameter2  + '.eps', format='eps', dpi=1000)
+	
+	return True
 
 
 
-
-if len(sys.argv) < 1:
-	print "usage: python plot_mcmc.py [ params ]"
+if len(sys.argv) < 2:
+	print "usage: python plot_mcmc.py [ display plot = 0, 1 ] [ params ]"
 	print "    chain 1D [ parameter ] [ # bins ]"
+	print "    chain 2D [ parameter1 ] [ parameter2 ] [ # bins ]"
 	print "    chain [ list of parameter names ]"
 
 
 	sys.exit(1)
 
 
-
-
-
+param = sys.argv[3:len(sys.argv)]
+ok = False
 
 if (sys.argv[1] == "mcmc"):
-	chain(sys.argv)
+	ok = chain(param)
 
 if (sys.argv[1] == "1d"):
-	likelihood1D(sys.argv)
+	ok = likelihood1D(param)
 
-print "\nInvalid command."
+if (sys.argv[1] == "2d"):
+	ok = likelihood2D(param)
 
-exit(1)
+if (ok):
+	if (sys.argv[2]=="1"):
+		plt.show()
+#	print "K"
+else:
+	print "\nInvalid command."
+
+exit(0)
 
 fig = plt.figure()
 
