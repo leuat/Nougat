@@ -5,6 +5,7 @@ import os
 import math
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+import scipy.optimize as so
 
 dir = "../../build-NanoPores-Desktop_Qt_5_5_1_clang_64bit-Release/NanoPores/NanoPores.app/Contents/MacOS/"
 
@@ -183,6 +184,10 @@ def likelihood1D(argv, data):
 	
 	return True
 
+
+def find_confidence_interval(x, pdf, confidence_level):
+	return pdf[pdf > x].sum() - confidence_level
+
 def likelihood2D(argv, data):
 	global save_dir
 	global save_plot
@@ -205,9 +210,31 @@ def likelihood2D(argv, data):
 	ax.set_xlabel(parameter1)
 	ax.set_ylabel(parameter2)
 	
-	h, x, y, p = plt.hist2d(data[parameter1], data[parameter2], bins = bins)
+	H, xedges, yedges, p = plt.hist2d(data[parameter1], data[parameter2], bins = bins)
+
+	x_bin_sizes = (xedges[1:] - xedges[:-1]).reshape((1,bins))
+	y_bin_sizes = (yedges[1:] - yedges[:-1]).reshape((bins,1))
+	pdf = (H*(x_bin_sizes*y_bin_sizes))
+
 	plt.clf()
-	plt.imshow(h, origin = "lower", interpolation = "nearest")
+	plt.imshow(H, origin = "lower", interpolation = "nearest")
+	plt.title("2D likelihood: " + parameter1 + " and " + parameter2)
+	ax.set_xticklabels(['hei', 'op'])
+	plt.xlabel(parameter1)
+	plt.ylabel(parameter2)
+
+	n = bins/5
+	xx = []
+	yy = []
+	for i in range(0,n):
+		xx.append(xedges[float(len(xedges)/float(n))*i])
+		yy.append(yedges[float(len(yedges)/float(n))*i])
+
+	plt.xticks(np.linspace(0, int(bins), n, endpoint=False), xx, rotation='horizontal')
+	plt.yticks(np.linspace(0, int(bins), n, endpoint=False), yy, rotation='horizontal')
+
+	#one_sigma = so.brentq(find_confidence_interval, -0.1, 100., args=(pdf, 0.68))
+
 	#n, bins = 	
 	#ax.hist2d(data[parameter1], data[parameter2], bins=bins, norm=LogNorm())
 #	H, xedges, yedges = np.histogram2d(data[parameter1], data[parameter2], bins=(bins, bins))
