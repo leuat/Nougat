@@ -30,6 +30,10 @@ fcols = ['#F05020', '#2050F0','#50F030', '#40F0F0']
 
 lineWidth = 2.0
 
+save_dir = ""
+display_plot = True
+save_plot = False
+
 
 def loadMcFile(filename): 
 	if (not os.path.isfile(filename)):
@@ -101,7 +105,6 @@ def addToPlot(x,y, ax, col, lbl, lw, col2):
 
 def addFile(filename, ax, col, lbl, lw, col2):
 	global curcol
-	print "loading " + filename
 	d = load(filename)
 	ax.plot(d[0],d[1], c=col, label=filename, linewidth=1 , alpha = 0.5)
 
@@ -119,13 +122,10 @@ def addToPlotSingle(data, ax, col, lbl, lw, col2):
 		addFile(path, ax,col,lbl,lw,col2)
 
 
-def chain(argv):
-	if (len(argv)<1):
-		print "Error: mcmc must supply filename."
-		return False
+def chain(argv, data):
 
-	filename = argv[0];
-	data = loadMcFile(dir + filename)
+	global save_dir
+	global save_plot
 
 	fig = plt.figure()
 
@@ -139,7 +139,7 @@ def chain(argv):
 	last = 0
 	first = ""
 	for i, value in enumerate(argv):
-		if (i>=1):
+		if (i>=0):
 			if (first==""):
 				first = value
 			ax.plot(data["chains"], data[value], c=fcols[color], label=value, linewidth=lineWidth)
@@ -149,21 +149,23 @@ def chain(argv):
 			last = int(i)
 
 	leg = ax.legend()
-	plt.savefig('mcmc_chain_' + first + '.eps', format='eps', dpi=1000)
+	if (save_plot):
+		plt.savefig(save_dir + 'mcmc_chain_' + first + '.eps', format='eps', dpi=1000)
 	return True
 
-def likelihood1D(argv):
-	if (len(argv)<3):
-		print "Error: likelihood must supply filename, parameter and # bins."
+def likelihood1D(argv, data):
+	global save_dir
+	global save_plot
+
+	if (len(argv)<2):
+		print "Error: likelihood must supply a parameter and # bins."
 		return False
 
-	filename = argv[0];
-	data = loadMcFile(dir + filename)
 
 	fig = plt.figure()
 
-	parameter = argv[1];
-	bins = int(argv[2]);
+	parameter = argv[0];
+	bins = int(argv[1]);
 
 	ax = fig.add_subplot(111)
 
@@ -176,23 +178,25 @@ def likelihood1D(argv):
 	#print n
 
 	leg = ax.legend()
-	plt.savefig('mcmc_1d_' + parameter  + '.eps', format='eps', dpi=1000)
+	if (save_plot):
+		plt.savefig(save_dir + 'mcmc_1d_' + parameter  + '.eps', format='eps', dpi=1000)
 	
 	return True
 
-def likelihood2D(argv):
-	if (len(argv)<4):
-		print "Error: 2d likelihood must supply filename, 2x parameters and # bins."
+def likelihood2D(argv, data):
+	global save_dir
+	global save_plot
+
+	if (len(argv)<3):
+		print "Error: 2d likelihood must supply 2x parameters and # bins."
 		exit(1)
 
-	filename = argv[0];
-	data = loadMcFile(dir + filename)
 
 	fig = plt.figure()
 
-	parameter1 = argv[1];
-	parameter2 = argv[2];
-	bins = int(argv[3]);
+	parameter1 = argv[0];
+	parameter2 = argv[1];
+	bins = int(argv[2]);
 
 	ax = fig.add_subplot(111)
 
@@ -214,40 +218,94 @@ def likelihood2D(argv):
 	#print n
 
 #	leg = ax.legend()
-	plt.savefig('mcmc_2d_' + parameter1 +'_' + parameter2  + '.eps', format='eps', dpi=1000)
+	if (save_plot):
+		plt.savefig(save_dir + 'mcmc_2d_' + parameter1 +'_' + parameter2  + '.eps', format='eps', dpi=1000)
 	
 	return True
 
 
+def set_options(argv):
+	i = 0
+	global display_plot
+	global save_plot
+	global save_dir
+
+	for cmd in argv:
+		if '-' in cmd:
+			i=i+1
+
+			if (cmd=="-save_plot"):
+				save_plot = True
+				continue
+			if (cmd=="-no_display"):
+				display_plot = False
+				continue
+
+			lst = cmd.split("=")
+
+			if (lst[0].strip()=="-plot_directory"):
+				save_dir = lst[1].strip() + "/"
+				continue
+
+			print "Error: unknown option: " + cmd
+			exit(1)
+
+		else:
+			break
+
+
+	return argv[i:len(argv)]
+
+
 
 if len(sys.argv) < 2:
-	print "usage: python plot_mcmc.py [ display plot = 0, 1 ] [ params ]"
-	print "    chain 1D [ parameter ] [ # bins ]"
-	print "    chain 2D [ parameter1 ] [ parameter2 ] [ # bins ]"
+	print "usage: python plot_mcmc.py  [ options ] [ filename ] [ method = chain, 1d, 2d ][ params ] "
+	print "  chains: "
+	print "    1d [ parameter ] [ # bins ]"
+	print "    2d [ parameter1 ] [ parameter2 ] [ # bins ]"
 	print "    chain [ list of parameter names ]"
+	print "  options: "
+	print "    -no_display: Don't display plot"
+	print "    -save_plot: Save to disk "
+	print "    -plot_directory = [ directory ] : plot save directory "
 
 
 	sys.exit(1)
 
 
-param = sys.argv[3:len(sys.argv)]
+
+
+
+params = set_options(sys.argv[1:len(sys.argv)])
+filename = params[0]
+
+if (not os.path.isfile(dir + filename)):
+	print "Error: could not load file: " + filename
+	exit(1)
+
+data = loadMcFile(dir + filename)
+
+# set parameters
+
 ok = False
 
-if (sys.argv[1] == "mcmc"):
-	ok = chain(param)
+parseParams = params[2:len(params)]
 
-if (sys.argv[1] == "1d"):
-	ok = likelihood1D(param)
+if (params[1] == "chain"):
+	ok = chain(parseParams, data)
 
-if (sys.argv[1] == "2d"):
-	ok = likelihood2D(param)
+if (params[1] == "1d"):
+	ok = likelihood1D(parseParams, data)
+
+if (params[1] == "2d"):
+	ok = likelihood2D(parseParams, data)
 
 if (ok):
-	if (sys.argv[2]=="1"):
+	if (display_plot):
 		plt.show()
 #	print "K"
 else:
-	print "\nInvalid command."
+	print "\nInvalid command: valid commands are chain, 1d or 2d."
 
 exit(0)
 
