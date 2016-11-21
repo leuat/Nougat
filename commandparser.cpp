@@ -7,6 +7,8 @@ void CommandParser::instructions() {
     cout << "Exhaustive list of parameters: " << endl<<endl;
     cout << "   dta [ xyz file ] [ output file ] [ # random vectors ]" << endl;
     cout << "   dta_model [ xyz file ] [ model parameter file] [ output file ] [ #random vectors ] [ seed ]" << endl;
+    cout << "   likelihood [ xyz data file ] [ model parameter file] [ output likelihood file ] [ no steps ]" << endl;
+
 
     cout << endl << endl;
 
@@ -52,6 +54,8 @@ bool CommandParser::CalculateDTA()
     g.SaveText(outFile.toStdString());
     return true;
 }
+
+
 
 bool CommandParser::CalculateDTAModel()
 {
@@ -121,6 +125,41 @@ map.grid().toVTKFile(vtk_filename, p.systemSize());   */
     return true;
 }
 
+bool CommandParser::FullLikelihood()
+{
+    assertParams(7,m_argc);
+    QString dataParticleFilename = m_argv[2];
+    QString bulkParticleFilename = m_argv[3];
+    QString modelFile = m_argv[4];
+    QString outFile = m_argv[5];
+    int noSteps = (int)QString(m_argv[6]).toFloat();
+
+
+    DTALikelihood likelihood;
+    likelihood.setLikelihoodFileName(outFile);
+    likelihood.setNumberOfRandomVectors(10000);
+
+    Particles dataParticles, bulkParticles;
+    qDebug() << "Loading particles..";
+    dataParticles.open(dataParticleFilename.toStdString().c_str());
+    bulkParticles.open(bulkParticleFilename.toStdString().c_str());
+
+    likelihood.setDataInput(&dataParticles);
+    likelihood.setOriginalInput(&bulkParticles);
+    qDebug() << bulkParticles.size();
+    RegularNoiseModel model;
+//    CIniFile params;
+    qDebug() << "Loading parameters..";
+    model.parameters()->load(modelFile.toStdString().c_str());
+    qDebug() << "Setting up..";
+    likelihood.monteCarlo(&model, noSteps, Likelihood::AnalysisAlgorithm::FullMonteCarlo);
+    qDebug() << "Starting loop!";
+    while (likelihood.getDone()==false)
+        likelihood.tick();
+
+    return true;
+}
+
 CommandParser::CommandParser(int argc, char *argv[])
 {
     // print instructions if no arguments
@@ -139,6 +178,9 @@ CommandParser::CommandParser(int argc, char *argv[])
 
     if (command == "dta_model")
         ok = CalculateDTAModel();
+
+    if (command == "likelihood")
+        ok = FullLikelihood();
 
     if (command == "create_octree") {
 

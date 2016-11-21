@@ -6,6 +6,7 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import scipy.optimize as so
+import matplotlib.mlab as mlab
 
 dir = "../../build-NanoPores-Desktop_Qt_5_5_1_clang_64bit-Release/NanoPores/NanoPores.app/Contents/MacOS/"
 
@@ -176,12 +177,29 @@ def likelihood1D(argv, data):
 	
 	n, bins, patches = ax.hist(data[parameter], bins, label=parameter, linewidth=lineWidth, normed=1, histtype='stepfilled', color=fcols[0])
 
+	d = data[parameter]
+
+	mu = np.mean(d)
+	sigma = np.std(d)
+
+	gauss_x = np.linspace(min(d), max(d), 100)	
+	# print gauss_x
+	plt.plot(gauss_x,mlab.normpdf(gauss_x, mu, sigma))
+
+	textstr = '$\mu=%.2f$\n$\sigma=%.2f$'%(mu, sigma)
 	#print n
+	props = dict(boxstyle='round', facecolor='white', alpha=0.5)
+	ax.text(0.85, 0.85, textstr, transform=ax.transAxes, fontsize=14,
+        verticalalignment='top', bbox=props)
+
+	plt.axvline(x=mu, ymin=0.0, ymax = max(n)*2, linewidth=2, color='#30FF30')
 
 	leg = ax.legend()
 	if (save_plot):
 		plt.savefig(save_dir + 'mcmc_1d_' + parameter  + '.eps', format='eps', dpi=1000)
 	
+
+
 	return True
 
 
@@ -219,11 +237,10 @@ def likelihood2D(argv, data):
 	plt.clf()
 	plt.imshow(H, origin = "lower", interpolation = "nearest")
 	plt.title("2D likelihood: " + parameter1 + " and " + parameter2)
-	ax.set_xticklabels(['hei', 'op'])
 	plt.xlabel(parameter1)
-	plt.ylabel(parameter2)
+	plt.ylabel(parameter2, rotation='horizontal')
 
-	n = bins/5
+	n = bins/8
 	xx = []
 	yy = []
 	for i in range(0,n):
