@@ -138,6 +138,7 @@ bool CommandParser::FullLikelihood()
 
     DTALikelihood likelihood;
     likelihood.setLikelihoodFileName(outFile);
+    qDebug() << "Initialize for " << noVectors << " vectors...";
     likelihood.setNumberOfRandomVectors(noVectors);
 
     Particles dataParticles, bulkParticles;
