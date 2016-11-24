@@ -1,5 +1,5 @@
 #include "commandparser.h"
-
+#include "GeometryLibrary/misc/random.h"
 
 void CommandParser::instructions() {
     cout << "Welcome to Nougat 0.1" << endl << endl;
@@ -133,7 +133,7 @@ bool CommandParser::FullLikelihood()
     QString modelFile = m_argv[4];
     QString outFile = m_argv[5];
     int noSteps = (int)QString(m_argv[6]).toFloat();
-
+    Random::randomSeed();
 
     DTALikelihood likelihood;
     likelihood.setLikelihoodFileName(outFile);
