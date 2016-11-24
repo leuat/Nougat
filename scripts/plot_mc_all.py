@@ -8,7 +8,7 @@ from matplotlib.colors import LogNorm
 
 #dir = "../../build-NanoPores-Desktop_Qt_5_5_1_clang_64bit-Release/NanoPores/NanoPores.app/Contents/MacOS/"
 dir = "./"
-#filename = "mc.txt"
+filename = ""
 directory = "figures"
 tmpfile = "tmp"
 fformat = "png"
@@ -94,7 +94,7 @@ def combine(sizex,sizey, params, typ, wx, wy):
 	os.system("open " + resultfile)
 
 if len(sys.argv)<6:
-	print "usage: python plot_mcmc_all.py [chain/1d/2d] [ ignore ][ x size ] [ y size ] [ list of params ] [ mc.txt ]"
+	print "usage: python plot_mcmc_all.py [chain/1d/2d] [ ignore ][ x size ] [ y size ] [ mc.txt ] [ list of params ] "
 	exit(1)
 
 
@@ -103,7 +103,7 @@ ignore = sys.argv[2]
 x = sys.argv[3]
 y = sys.argv[4]
 filename = sys.argv[5]
-params = getAllParams(sys.argv[5:len(sys.argv)], typ)
+params = getAllParams(sys.argv[6:len(sys.argv)], typ)
 if (not ignore == "ignore"):
 	if typ=="chain":
 		mcmc(params)

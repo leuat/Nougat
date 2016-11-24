@@ -8,8 +8,8 @@ from matplotlib.colors import LogNorm
 import scipy.optimize as so
 import matplotlib.mlab as mlab
 
-dir = "../../build-NanoPores-Desktop_Qt_5_5_1_clang_64bit-Release/NanoPores/NanoPores.app/Contents/MacOS/"
-
+#dir = "../../build-NanoPores-Desktop_Qt_5_5_1_clang_64bit-Release/NanoPores/NanoPores.app/Contents/MacOS/"
+dir ="./"
 
 
 #def normalise(data):
