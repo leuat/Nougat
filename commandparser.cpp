@@ -7,7 +7,7 @@ void CommandParser::instructions() {
     cout << "Exhaustive list of parameters: " << endl<<endl;
     cout << "   dta [ xyz file ] [ output file ] [ # random vectors ]" << endl;
     cout << "   dta_model [ xyz file ] [ model parameter file] [ output file ] [ #random vectors ] [ seed ]" << endl;
-    cout << "   likelihood [ xyz data file ] [ model parameter file] [ output likelihood file ] [ no steps ]" << endl;
+    cout << "   likelihood [ xyz data file ] [ model parameter file] [ output likelihood file ] [ no steps ] [ no vectors ]" << endl;
 
 
     cout << endl << endl;
@@ -127,17 +127,18 @@ map.grid().toVTKFile(vtk_filename, p.systemSize());   */
 
 bool CommandParser::FullLikelihood()
 {
-    assertParams(7,m_argc);
+    assertParams(8,m_argc);
     QString dataParticleFilename = m_argv[2];
     QString bulkParticleFilename = m_argv[3];
     QString modelFile = m_argv[4];
     QString outFile = m_argv[5];
     int noSteps = (int)QString(m_argv[6]).toFloat();
+    int noVectors = (int)QString(m_argv[7]).toFloat();
     Random::randomSeed();
 
     DTALikelihood likelihood;
     likelihood.setLikelihoodFileName(outFile);
-    likelihood.setNumberOfRandomVectors(10000);
+    likelihood.setNumberOfRandomVectors(noVectors);
 
     Particles dataParticles, bulkParticles;
     qDebug() << "Loading particles..";
