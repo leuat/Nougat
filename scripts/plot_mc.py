@@ -2,8 +2,10 @@
 import numpy as np
 import sys
 import os
+import re
 import math
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm 
 from matplotlib.colors import LogNorm
 import scipy.optimize as so
 import matplotlib.mlab as mlab
@@ -62,9 +64,19 @@ def loadMcFile(filename):
 #	print rawdata
 	for d in rawdata:
 		# ignore comments
+#		print d
 		if (not '#' in d):
 			values = d.split(' ')
+			#print values
 			for i, value in enumerate(values):
+				#print "before: " + value
+				#value = re.sub(r'\W+', '', value)
+				value = value.strip()
+				value = value.replace("\0x00", "")
+				#print "val:" + value + " : " +str(len(value))
+				if len(value)==0:
+					value = "0"
+				#print "after:" + value
 				data[header[i]].append(float(value))
 
 	data["chains"] = np.linspace(0,len(data["step"]),len(data["step"]), endpoint = False)
@@ -204,7 +216,8 @@ def likelihood1D(argv, data):
 
 
 def find_confidence_interval(x, pdf, confidence_level):
-	return pdf[pdf > x].sum() - confidence_level
+    return pdf[pdf > x].sum() - confidence_level
+
 
 def likelihood2D(argv, data):
 	global save_dir
@@ -228,40 +241,52 @@ def likelihood2D(argv, data):
 	ax.set_xlabel(parameter1)
 	ax.set_ylabel(parameter2)
 	
-	H, xedges, yedges, p = plt.hist2d(data[parameter1], data[parameter2], bins = bins)
+	H, xedges, yedges, p = plt.hist2d(data[parameter1], data[parameter2], bins = bins, normed=True)
 
 	x_bin_sizes = (xedges[1:] - xedges[:-1]).reshape((1,bins))
 	y_bin_sizes = (yedges[1:] - yedges[:-1]).reshape((bins,1))
 	pdf = (H*(x_bin_sizes*y_bin_sizes))
 
 	plt.clf()
-	plt.imshow(H, origin = "lower", interpolation = "nearest")
-	plt.title("2D likelihood: " + parameter1 + " and " + parameter2)
-	plt.xlabel(parameter1)
-	plt.ylabel(parameter2, rotation='horizontal')
 
-	n = bins/8
+
+	plt.imshow(H, origin = "lower", interpolation = "nearest")#, cmap="CMRmap")
+
+	one_sigma = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.68))
+	two_sigma = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.95))
+	X, Y = 0.5*(xedges[1:]+xedges[:-1]), 0.5*(yedges[1:]+yedges[:-1])
+
+
+	#X, Y = 0.5*(xedges[1:]+xedges[:-1])*bins, 0.5*(yedges[1:]+yedges[:-1]*bins)
+ 	Z = pdf.T
+ 	Z = np.swapaxes(Z,0,1)
+ 	contourcolors = ('yellow', 'yellow', 'white')
+	contourlinestyles = ('-', '--', ':')
+	contourlinewidths = (1.5, 1.5, 1.5)
+	contourlabels = [r'1 $\sigma$', r'2 $\sigma$',r'3 $\sigma$']
+
+ 	contour = plt.contour(Z, levels=[one_sigma, two_sigma], origin="lower", colors=['white', 'white'], linestyles=contourlinestyles)
+
+
+	plt.title("2D likelihood: " + parameter1 + " and " + parameter2)
+	plt.xlabel(parameter2)
+	plt.ylabel(parameter1, rotation='horizontal')
+
+	n = 5
 	xx = []
 	yy = []
 	for i in range(0,n):
-		xx.append(xedges[float(len(xedges)/float(n))*i])
-		yy.append(yedges[float(len(yedges)/float(n))*i])
-
-	plt.xticks(np.linspace(0, int(bins), n, endpoint=False), xx, rotation='horizontal')
-	plt.yticks(np.linspace(0, int(bins), n, endpoint=False), yy, rotation='horizontal')
-
-	#one_sigma = so.brentq(find_confidence_interval, -0.1, 100., args=(pdf, 0.68))
-
-	#n, bins = 	
-	#ax.hist2d(data[parameter1], data[parameter2], bins=bins, norm=LogNorm())
-#	H, xedges, yedges = np.histogram2d(data[parameter1], data[parameter2], bins=(bins, bins))
-#	print h
-#	plt.colorbar()
+		xx.append(round(xedges[float(len(xedges)/float(n))*float(i)],2))
+		yy.append(round(yedges[float(len(yedges)/float(n))*float(i)],2))
 
 
-	#print n
+	r = round(np.corrcoef( data[parameter1], data[parameter2] )[1][0],2)
 
-#	leg = ax.legend()
+	plt.text(32, 37, "r = "+str(r), color='white')
+	plt.yticks(np.linspace(0, int(bins), n, endpoint=False), xx, rotation='horizontal')
+	plt.xticks(np.linspace(0, int(bins), n, endpoint=False), yy, rotation='horizontal')
+
+
 	if (save_plot):
 		plt.savefig(save_dir + 'mcmc_2d_' + parameter1 +'_' + parameter2  + '.eps', format='eps', dpi=1000)
 	
