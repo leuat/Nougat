@@ -33,7 +33,7 @@ fc = '#B0B0B0'
 fcols = ['#F05020', '#2050F0','#50F030', '#40F0F0']
 
 lineWidth = 2.0
-
+DPI = 300
 save_dir = ""
 display_plot = True
 save_plot = False
@@ -164,7 +164,7 @@ def chain(argv, data):
 
 	leg = ax.legend()
 	if (save_plot):
-		plt.savefig(save_dir + 'mcmc_chain_' + first + '.eps', format='eps', dpi=1000)
+		plt.savefig(save_dir + 'mcmc_chain_' + first + '.png', format='png', dpi=DPI)
 	return True
 
 def likelihood1D(argv, data):
@@ -208,7 +208,7 @@ def likelihood1D(argv, data):
 
 	leg = ax.legend()
 	if (save_plot):
-		plt.savefig(save_dir + 'mcmc_1d_' + parameter  + '.eps', format='eps', dpi=1000)
+		plt.savefig(save_dir + 'mcmc_1d_' + parameter  + '.png', format='png', dpi=DPI)
 	
 
 
@@ -241,6 +241,9 @@ def likelihood2D(argv, data):
 	ax.set_xlabel(parameter1)
 	ax.set_ylabel(parameter2)
 	
+	print "mean x: " + str(np.mean(data[parameter1]))
+	print "mean y: " + str(np.mean(data[parameter2]))
+
 	H, xedges, yedges, p = plt.hist2d(data[parameter1], data[parameter2], bins = bins, normed=True)
 
 	x_bin_sizes = (xedges[1:] - xedges[:-1]).reshape((1,bins))
@@ -265,7 +268,7 @@ def likelihood2D(argv, data):
 	contourlinewidths = (1.5, 1.5, 1.5)
 	contourlabels = [r'1 $\sigma$', r'2 $\sigma$',r'3 $\sigma$']
 
- 	contour = plt.contour(Z, levels=[one_sigma, two_sigma], origin="lower", colors=['white', 'white'], linestyles=contourlinestyles)
+# 	contour = plt.contour(Z, levels=[one_sigma, two_sigma], origin="lower", colors=['white', 'white'], linestyles=contourlinestyles)
 
 
 	plt.title("2D likelihood: " + parameter1 + " and " + parameter2)
@@ -282,13 +285,36 @@ def likelihood2D(argv, data):
 
 	r = round(np.corrcoef( data[parameter1], data[parameter2] )[1][0],2)
 
-	plt.text(32, 37, "r = "+str(r), color='white')
+	plt.figtext(0.635, 0.84, "r: "+str(r), color='white')
 	plt.yticks(np.linspace(0, int(bins), n, endpoint=False), xx, rotation='horizontal')
 	plt.xticks(np.linspace(0, int(bins), n, endpoint=False), yy, rotation='horizontal')
 
+	maxL = np.unravel_index(np.argmax(pdf),pdf.shape)
+	xmaxVal= round(X[maxL[0]],2)
+	ymaxVal= round(Y[maxL[1]],2)
+
+	print xmaxVal
+	print ymaxVal
+	xmax = maxL[1]
+	ymax = maxL[0]
+
+	plt.axvline(x=xmax, linewidth=1, color='#30FF30')
+	plt.axhline(y=ymax, linewidth=1, color='#30FF30')
+
+
+#	plt.figtext(xmax/float(len(X)),ymax/float(len(Y)),"(" + str(ymaxVal) + "," + str(xmaxVal)+ ")")
+	plt.figtext(0.55, 0.80,"maximum: (" + str(ymaxVal) + "," + str(xmaxVal)+ ")", color='white')
+#	plt.label(xmax,0, xmaxVal)
+#	plt.label(0,ymax, ymaxVal)
+
+#	plt.Circle((30,30),5,color='yellow')
+#	print pdf.index(pdf.max())
+#	print pdf.argmax(axis=1)
+#	print Y.max()
+
 
 	if (save_plot):
-		plt.savefig(save_dir + 'mcmc_2d_' + parameter1 +'_' + parameter2  + '.eps', format='eps', dpi=1000)
+		plt.savefig(save_dir + 'mcmc_2d_' + parameter1 +'_' + parameter2  + '.png', format='png', dpi=DPI)
 	
 	return True
 

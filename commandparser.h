@@ -34,6 +34,7 @@ public:
     bool CalculateDTAModel();
     bool DTAMapXYZ();
     bool FullLikelihood();
+    bool Likelihood1D();
 
 
 };

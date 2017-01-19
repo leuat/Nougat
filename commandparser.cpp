@@ -7,7 +7,8 @@ void CommandParser::instructions() {
     cout << "Exhaustive list of parameters: " << endl<<endl;
     cout << "   dta [ xyz file ] [ output file ] [ # random vectors ]" << endl;
     cout << "   dta_model [ xyz file ] [ model parameter file] [ output file ] [ #random vectors ] [ seed ]" << endl;
-    cout << "   likelihood [ xyz data file ] [ model parameter file] [ output likelihood file ] [ no steps ] [ no vectors ]" << endl;
+    cout << "   likelihood [ xyz data file ] [ bulk data ] [ model parameter file] [ output likelihood file ] [ no steps ] [ no vectors ]" << endl;
+    cout << "   brute1d [ xyz data file ] [ bulk data ]  [ model parameter file] [ output likelihood file ] [ no bins ] [ no vectors ] [ parameter ]" << endl;
 
 
     cout << endl << endl;
@@ -125,6 +126,53 @@ map.grid().toVTKFile(vtk_filename, p.systemSize());   */
     return true;
 }
 
+bool CommandParser::Likelihood1D() {
+    assertParams(9,m_argc);
+    QString dataParticleFilename = m_argv[2];
+    QString bulkParticleFilename = m_argv[3];
+    QString modelFile = m_argv[4];
+    QString outFile = m_argv[5];
+    int noSteps = (int)QString(m_argv[6]).toFloat();
+    int noVectors = (int)QString(m_argv[7]).toFloat();
+    QString parameter = m_argv[8];
+
+    Random::randomSeed();
+
+    DTALikelihood likelihood;
+    likelihood.setDebug(true);
+    likelihood.setLikelihoodFileName(outFile);
+    qDebug() << "Initialize for " << noVectors << " vectors...";
+    likelihood.setNumberOfRandomVectors(noVectors);
+
+    Particles dataParticles, bulkParticles;
+    qDebug() << "Loading particles..";
+    dataParticles.open(dataParticleFilename.toStdString().c_str());
+    bulkParticles.open(bulkParticleFilename.toStdString().c_str());
+
+    likelihood.setDataInput(&dataParticles);
+    likelihood.setOriginalInput(&bulkParticles);
+    qDebug() << bulkParticles.size();
+    RegularNoiseModel model;
+//    CIniFile params;
+    qDebug() << "Loading parameters..";
+    model.parameters()->load(modelFile.toStdString().c_str());
+    qDebug() << "Setting up..";
+    //likelihood.monteCarlo(&model, noSteps, Likelihood::AnalysisAlgorithm::FullMonteCarlo);
+    likelihood.bruteForce1D(noSteps, parameter, &model);
+
+    qDebug() << "Starting loop!";
+
+    while (likelihood.getDone()==false)
+        likelihood.tick();
+
+    likelihood.likelihood().SaveText(QString("chisq_" + outFile).toStdString().c_str());
+    likelihood.likelihood().LikelihoodFromChisq();
+    likelihood.likelihood().SaveText(outFile.toStdString().c_str());
+    return true;
+
+
+}
+
 bool CommandParser::FullLikelihood()
 {
     assertParams(8,m_argc);
@@ -183,6 +231,9 @@ CommandParser::CommandParser(int argc, char *argv[])
 
     if (command == "likelihood")
         ok = FullLikelihood();
+
+    if (command == "brute1d")
+        ok = Likelihood1D();
 
     if (command == "create_octree") {
 
