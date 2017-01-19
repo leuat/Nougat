@@ -32,7 +32,10 @@ SOURCES += \
     GeometryLibrary/misc/grid.cpp \
     GeometryLibrary/misc/points.cpp \
     GeometryLibrary/measures/distancetoatom.cpp \
-    GeometryLibrary/measures/measure.cpp
+    GeometryLibrary/measures/measure.cpp \
+    GeometryLibrary/measures/gofr.cpp \
+    GeometryLibrary/measures/neighborlist.cpp \
+    GeometryLibrary/measures/poresizedistribution.cpp
 
 HEADERS += \
     GeometryLibrary/likelihood/graphstatistics.h \
@@ -64,4 +67,7 @@ HEADERS += \
     GeometryLibrary/misc/grid.h \
     GeometryLibrary/misc/points.h \
     GeometryLibrary/measures/distancetoatom.h \
-    GeometryLibrary/measures/measure.h
+    GeometryLibrary/measures/measure.h \
+    GeometryLibrary/measures/gofr.h \
+    GeometryLibrary/measures/neighborlist.h \
+    GeometryLibrary/measures/poresizedistribution.h
