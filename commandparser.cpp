@@ -147,7 +147,7 @@ bool CommandParser::Likelihood1D() {
     Random::randomSeed();
 
     ParticleLikelihood* likelihood;
-
+    qDebug() << measure;
     if (measure=="dta") {
         DTALikelihood* l = new DTALikelihood();
         likelihood = dynamic_cast<ParticleLikelihood*>(l);
@@ -157,7 +157,7 @@ bool CommandParser::Likelihood1D() {
     if (measure=="gofr") {
         GOfRLikelihood* l = new GOfRLikelihood();
         likelihood = dynamic_cast<ParticleLikelihood*>(l);
-        //l->setNumberOfRandomVectors(noVectors);
+        likelihood->setTemperature(5);
     }
     else {
         qDebug() << "ERROR: Must supply either dta or gofr measure!";
@@ -184,8 +184,9 @@ bool CommandParser::Likelihood1D() {
 
     qDebug() << "Starting loop!";
 
-    while (likelihood->getDone()==false)
+    while (likelihood->getDone()==false) {
         likelihood->tick();
+    }
 
     likelihood->likelihood().SaveText(QString("chisq_" + outFile).toStdString().c_str());
     likelihood->likelihood().LikelihoodFromChisq();
@@ -219,6 +220,8 @@ bool CommandParser::FullLikelihood()
     if (measure=="gofr") {
         GOfRLikelihood* l = new GOfRLikelihood();
         likelihood = dynamic_cast<ParticleLikelihood*>(l);
+        likelihood->setTemperature(1);
+
         //l->setNumberOfRandomVectors(noVectors);
     }
     else {
