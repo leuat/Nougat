@@ -133,30 +133,46 @@ map.grid().toVTKFile(vtk_filename, p.systemSize());   */
 }
 
 bool CommandParser::Likelihood1D() {
-    assertParams(9,m_argc);
-    QString dataParticleFilename = m_argv[2];
-    QString bulkParticleFilename = m_argv[3];
-    QString modelFile = m_argv[4];
-    QString outFile = m_argv[5];
-    int noSteps = (int)QString(m_argv[6]).toFloat();
-    int noVectors = (int)QString(m_argv[7]).toFloat();
-    QString parameter = m_argv[8];
+    assertParams(10,m_argc);
+    QString measure = m_argv[2];
+
+    QString dataParticleFilename = m_argv[3];
+    QString bulkParticleFilename = m_argv[4];
+    QString modelFile = m_argv[5];
+    QString outFile = m_argv[6];
+    int noSteps = (int)QString(m_argv[7]).toFloat();
+    int noVectors = (int)QString(m_argv[8]).toFloat();
+    QString parameter = m_argv[9];
 
     Random::randomSeed();
 
-    DTALikelihood likelihood;
+    ParticleLikelihood* likelihood;
+
+    if (measure=="dta") {
+        DTALikelihood* l = new DTALikelihood();
+        likelihood = dynamic_cast<ParticleLikelihood*>(l);
+        l->setNumberOfRandomVectors(noVectors);
+    }
+    else
+    if (measure=="gofr") {
+        GOfRLikelihood* l = new GOfRLikelihood();
+        likelihood = dynamic_cast<ParticleLikelihood*>(l);
+        //l->setNumberOfRandomVectors(noVectors);
+    }
+    else {
+        qDebug() << "ERROR: Must supply either dta or gofr measure!";
+        exit(1);
+    }
 //    likelihood.setDebug(true);
-    likelihood.setLikelihoodFileName(outFile);
-    qDebug() << "Initialize for " << noVectors << " vectors...";
-    likelihood.setNumberOfRandomVectors(noVectors);
+    likelihood->setLikelihoodFileName(outFile);
 
     Particles dataParticles, bulkParticles;
     qDebug() << "Loading particles..";
     dataParticles.open(dataParticleFilename.toStdString().c_str());
     bulkParticles.open(bulkParticleFilename.toStdString().c_str());
 
-    likelihood.setDataInput(&dataParticles);
-    likelihood.setOriginalInput(&bulkParticles);
+    likelihood->setDataInput(&dataParticles);
+    likelihood->setOriginalInput(&bulkParticles);
     qDebug() << bulkParticles.size();
     RegularNoiseModel model;
 //    CIniFile params;
@@ -164,20 +180,21 @@ bool CommandParser::Likelihood1D() {
     model.parameters()->load(modelFile.toStdString().c_str());
     qDebug() << "Setting up..";
     //likelihood.monteCarlo(&model, noSteps, Likelihood::AnalysisAlgorithm::FullMonteCarlo);
-    likelihood.bruteForce1D(noSteps, parameter, &model);
+    likelihood->bruteForce1D(noSteps, parameter, &model);
 
     qDebug() << "Starting loop!";
 
-    while (likelihood.getDone()==false)
-        likelihood.tick();
+    while (likelihood->getDone()==false)
+        likelihood->tick();
 
-    likelihood.likelihood().SaveText(QString("chisq_" + outFile).toStdString().c_str());
-    likelihood.likelihood().LikelihoodFromChisq();
-    likelihood.likelihood().SaveText(outFile.toStdString().c_str());
+    likelihood->likelihood().SaveText(QString("chisq_" + outFile).toStdString().c_str());
+    likelihood->likelihood().LikelihoodFromChisq();
+    likelihood->likelihood().SaveText(outFile.toStdString().c_str());
     return true;
 
 
 }
+
 
 bool CommandParser::FullLikelihood()
 {
@@ -190,21 +207,19 @@ bool CommandParser::FullLikelihood()
     int noSteps = (int)QString(m_argv[7]).toFloat();
     int noVectors = (int)QString(m_argv[8]).toFloat();
     Random::randomSeed();
-    qDebug() << measure;
+
     ParticleLikelihood* likelihood;
 
     if (measure=="dta") {
         DTALikelihood* l = new DTALikelihood();
         likelihood = dynamic_cast<ParticleLikelihood*>(l);
         l->setNumberOfRandomVectors(noVectors);
-        if (!likelihood) {
-            qDebug() << "ÅNEI";
-        }
     }
     else
     if (measure=="gofr") {
-        likelihood = new GOfRLikelihood();
-//        likelihood->
+        GOfRLikelihood* l = new GOfRLikelihood();
+        likelihood = dynamic_cast<ParticleLikelihood*>(l);
+        //l->setNumberOfRandomVectors(noVectors);
     }
     else {
         qDebug() << "ERROR: Must supply either dta or gofr measure!";
@@ -212,7 +227,6 @@ bool CommandParser::FullLikelihood()
     }
 
     likelihood->setLikelihoodFileName(outFile);
-    qDebug() << "HEI";
 
     qDebug() << "Initialize for " << noVectors << " vectors...";
 

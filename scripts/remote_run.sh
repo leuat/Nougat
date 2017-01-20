@@ -1,4 +1,4 @@
 #!/bin/bash
-rm output/$1_output.txt
-./Nougat likelihood data/$2.xyz data/sio2_bulk.xyz data/$1.txt output/$1_output.txt $3 $4
+rm output/$2_output.txt
+./Nougat likelihood $1 data/$3.xyz data/sio2_bulk.xyz data/$2.txt output/$2_output.txt $4 $5
 # echo Starting likelihood with data: $2 and parameters $1
