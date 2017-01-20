@@ -8,7 +8,7 @@
 #include <iostream>
 #include "GeometryLibrary/distancetoatom.h"
 #include "GeometryLibrary/particle.h"
-#include "GeometryLibrary/dtalikelihood.h"
+#include "GeometryLibrary/likelihood/dtalikelihood.h"
 #include "GeometryLibrary/likelihood/lgraph.h"
 #include "GeometryLibrary/models/regularnoisemodel.h"
 using namespace std;

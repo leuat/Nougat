@@ -1,5 +1,7 @@
 #include "commandparser.h"
 #include "GeometryLibrary/misc/random.h"
+#include "GeometryLibrary/likelihood/particlelikelihood.h"
+#include "GeometryLibrary/likelihood/gofrlikelihood.h"
 
 void CommandParser::instructions() {
     cout << "Welcome to Nougat 0.1" << endl << endl;
@@ -47,8 +49,10 @@ bool CommandParser::CalculateDTA()
 
     QVector<QVector3D> points;
     p.appendToQVector3DList(points);
-    DistanceToAtom da(randomDirections);
-    da.compute(points, 30.0);
+    DistanceToAtom da;
+    da.setNumberOfRandomVectors(randomDirections);
+    da.setCutoff(30);
+    da.compute(points);
     QVector<QPointF> hist = da.histogram(100);
     LGraph g(hist);
     g.normalizeArea();
@@ -100,8 +104,10 @@ bool CommandParser::CalculateDTAModel()
 
     cout << "DTAing " << points.size() << " particles..." << endl;
 
-    DistanceToAtom da(randomDirections);
-    da.compute(points, 30.0);
+    DistanceToAtom da;
+    da.setNumberOfRandomVectors(randomDirections);
+    da.setCutoff(30);
+    da.compute(points);
     QVector<QPointF> hist = da.histogram(100);
     LGraph g(hist);
     g.normalizeArea();
@@ -139,7 +145,7 @@ bool CommandParser::Likelihood1D() {
     Random::randomSeed();
 
     DTALikelihood likelihood;
-    likelihood.setDebug(true);
+//    likelihood.setDebug(true);
     likelihood.setLikelihoodFileName(outFile);
     qDebug() << "Initialize for " << noVectors << " vectors...";
     likelihood.setNumberOfRandomVectors(noVectors);
@@ -175,37 +181,59 @@ bool CommandParser::Likelihood1D() {
 
 bool CommandParser::FullLikelihood()
 {
-    assertParams(8,m_argc);
-    QString dataParticleFilename = m_argv[2];
-    QString bulkParticleFilename = m_argv[3];
-    QString modelFile = m_argv[4];
-    QString outFile = m_argv[5];
-    int noSteps = (int)QString(m_argv[6]).toFloat();
-    int noVectors = (int)QString(m_argv[7]).toFloat();
+    assertParams(9,m_argc);
+    QString measure = m_argv[2];
+    QString dataParticleFilename = m_argv[3];
+    QString bulkParticleFilename = m_argv[4];
+    QString modelFile = m_argv[5];
+    QString outFile = m_argv[6];
+    int noSteps = (int)QString(m_argv[7]).toFloat();
+    int noVectors = (int)QString(m_argv[8]).toFloat();
     Random::randomSeed();
+    qDebug() << measure;
+    ParticleLikelihood* likelihood;
 
-    DTALikelihood likelihood;
-    likelihood.setLikelihoodFileName(outFile);
+    if (measure=="dta") {
+        DTALikelihood* l = new DTALikelihood();
+        likelihood = dynamic_cast<ParticleLikelihood*>(l);
+        l->setNumberOfRandomVectors(noVectors);
+        if (!likelihood) {
+            qDebug() << "ÅNEI";
+        }
+    }
+    else
+    if (measure=="gofr") {
+        likelihood = new GOfRLikelihood();
+//        likelihood->
+    }
+    else {
+        qDebug() << "ERROR: Must supply either dta or gofr measure!";
+        exit(1);
+    }
+
+    likelihood->setLikelihoodFileName(outFile);
+    qDebug() << "HEI";
+
     qDebug() << "Initialize for " << noVectors << " vectors...";
-    likelihood.setNumberOfRandomVectors(noVectors);
 
     Particles dataParticles, bulkParticles;
     qDebug() << "Loading particles..";
     dataParticles.open(dataParticleFilename.toStdString().c_str());
     bulkParticles.open(bulkParticleFilename.toStdString().c_str());
 
-    likelihood.setDataInput(&dataParticles);
-    likelihood.setOriginalInput(&bulkParticles);
+    likelihood->setDataInput(&dataParticles);
+    likelihood->setOriginalInput(&bulkParticles);
+
     qDebug() << bulkParticles.size();
     RegularNoiseModel model;
-//    CIniFile params;
+
     qDebug() << "Loading parameters..";
     model.parameters()->load(modelFile.toStdString().c_str());
     qDebug() << "Setting up..";
-    likelihood.monteCarlo(&model, noSteps, Likelihood::AnalysisAlgorithm::FullMonteCarlo);
+    likelihood->monteCarlo(&model, noSteps, Likelihood::AnalysisAlgorithm::FullMonteCarlo);
     qDebug() << "Starting loop!";
-    while (likelihood.getDone()==false)
-        likelihood.tick();
+    while (likelihood->getDone()==false)
+        likelihood->tick();
 
     return true;
 }

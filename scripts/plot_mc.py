@@ -198,6 +198,14 @@ def likelihood1D(argv, data):
 	# print gauss_x
 	plt.plot(gauss_x,mlab.normpdf(gauss_x, mu, sigma))
 
+#	plt.tick_params(
+#		axis='y',          # changes apply to the x-axis
+#		which='both',      # both major and minor ticks are affected
+#		bottom='off',      # ticks along the bottom edge are off
+#		top='off',         # ticks along the top edge are off
+#		labelbottom='off') # labels along the bottom edge are off
+
+	ax.get_yaxis().set_visible(False)
 	textstr = '$\mu=%.2f$\n$\sigma=%.2f$'%(mu, sigma)
 	#print n
 	props = dict(boxstyle='round', facecolor='white', alpha=0.5)
@@ -268,7 +276,7 @@ def likelihood2D(argv, data):
 	contourlinewidths = (1.5, 1.5, 1.5)
 	contourlabels = [r'1 $\sigma$', r'2 $\sigma$',r'3 $\sigma$']
 
-# 	contour = plt.contour(Z, levels=[one_sigma, two_sigma], origin="lower", colors=['white', 'white'], linestyles=contourlinestyles)
+ 	contour = plt.contour(Z, levels=[one_sigma, two_sigma], origin="lower", colors=['white', 'white'], linestyles=contourlinestyles)
 
 
 	plt.title("2D likelihood: " + parameter1 + " and " + parameter2)
@@ -290,11 +298,11 @@ def likelihood2D(argv, data):
 	plt.xticks(np.linspace(0, int(bins), n, endpoint=False), yy, rotation='horizontal')
 
 	maxL = np.unravel_index(np.argmax(pdf),pdf.shape)
-	xmaxVal= round(X[maxL[0]],2)
-	ymaxVal= round(Y[maxL[1]],2)
+	xmaxVal= round(X[maxL[0]],3)
+	ymaxVal= round(Y[maxL[1]],3)
 
-	print xmaxVal
-	print ymaxVal
+	#print xmaxVal
+	#print ymaxVal
 	xmax = maxL[1]
 	ymax = maxL[0]
 
@@ -303,7 +311,7 @@ def likelihood2D(argv, data):
 
 
 #	plt.figtext(xmax/float(len(X)),ymax/float(len(Y)),"(" + str(ymaxVal) + "," + str(xmaxVal)+ ")")
-	plt.figtext(0.55, 0.80,"maximum: (" + str(ymaxVal) + "," + str(xmaxVal)+ ")", color='white')
+	plt.figtext(0.53, 0.80,"maximum: (" + str(ymaxVal) + "," + str(xmaxVal)+ ")", color='white')
 #	plt.label(xmax,0, xmaxVal)
 #	plt.label(0,ymax, ymaxVal)
 

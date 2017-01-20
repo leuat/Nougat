@@ -24,7 +24,7 @@ SOURCES += \
     GeometryLibrary/perlin.cpp \
     GeometryLibrary/simplex.cpp \
     GeometryLibrary/simplexnoise.cpp \
-    GeometryLibrary/dtalikelihood.cpp \
+    GeometryLibrary/likelihood/dtalikelihood.cpp \
     GeometryLibrary/particle.cpp \
     nougat.cpp \
     commandparser.cpp \
@@ -35,7 +35,9 @@ SOURCES += \
     GeometryLibrary/measures/measure.cpp \
     GeometryLibrary/measures/gofr.cpp \
     GeometryLibrary/measures/neighborlist.cpp \
-    GeometryLibrary/measures/poresizedistribution.cpp
+    GeometryLibrary/measures/poresizedistribution.cpp \
+    GeometryLibrary/likelihood/gofrlikelihood.cpp \
+    GeometryLibrary/likelihood/particlelikelihood.cpp
 
 HEADERS += \
     GeometryLibrary/likelihood/graphstatistics.h \
@@ -60,7 +62,7 @@ HEADERS += \
     GeometryLibrary/perlin.h \
     GeometryLibrary/simplex.h \
     GeometryLibrary/simplexnoise.h \
-    GeometryLibrary/dtalikelihood.h \
+    GeometryLibrary/likelihood/dtalikelihood.h \
     GeometryLibrary/particle.h \
     commandparser.h \
     GeometryLibrary/misc/distancetoatommap.h \
@@ -70,4 +72,6 @@ HEADERS += \
     GeometryLibrary/measures/measure.h \
     GeometryLibrary/measures/gofr.h \
     GeometryLibrary/measures/neighborlist.h \
-    GeometryLibrary/measures/poresizedistribution.h
+    GeometryLibrary/measures/poresizedistribution.h \
+    GeometryLibrary/likelihood/gofrlikelihood.h \
+    GeometryLibrary/likelihood/particlelikelihood.h
