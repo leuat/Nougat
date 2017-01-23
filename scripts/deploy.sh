@@ -1,7 +1,7 @@
 #!/bin/bash
 echo parameters:
 echo   1: owl 1-6  
-echo   2: dta or gofr - measure
+echo   2: dta or gofr -
 echo   3: data file
 echo   4: parameter file
 echo   5: number of samples

@@ -9,8 +9,8 @@ void CommandParser::instructions() {
     cout << "Exhaustive list of parameters: " << endl<<endl;
     cout << "   dta [ xyz file ] [ output file ] [ # random vectors ]" << endl;
     cout << "   dta_model [ xyz file ] [ model parameter file] [ output file ] [ #random vectors ] [ seed ]" << endl;
-    cout << "   likelihood [ xyz data file ] [ bulk data ] [ model parameter file] [ output likelihood file ] [ no steps ] [ no vectors ]" << endl;
-    cout << "   brute1d [ xyz data file ] [ bulk data ]  [ model parameter file] [ output likelihood file ] [ no bins ] [ no vectors ] [ parameter ]" << endl;
+    cout << "   likelihood [ dta/gofr] [ xyz data file ] [ bulk data ] [ model parameter file] [ output likelihood file ] [ no steps ] [ no vectors ] [temperature (20 for dta)]" << endl;
+    cout << "   brute1d [ dta/gofr]  [ xyz data file ] [ bulk data ]  [ model parameter file] [ output likelihood file ] [ no bins ] [ no vectors ] [ parameter ] [temperature (20 for dta)]" << endl;
 
 
     cout << endl << endl;
@@ -133,7 +133,7 @@ map.grid().toVTKFile(vtk_filename, p.systemSize());   */
 }
 
 bool CommandParser::Likelihood1D() {
-    assertParams(10,m_argc);
+    assertParams(11,m_argc);
     QString measure = m_argv[2];
 
     QString dataParticleFilename = m_argv[3];
@@ -142,6 +142,7 @@ bool CommandParser::Likelihood1D() {
     QString outFile = m_argv[6];
     int noSteps = (int)QString(m_argv[7]).toFloat();
     int noVectors = (int)QString(m_argv[8]).toFloat();
+    float temperature = (float)QString(m_argv[10]).toFloat();
     QString parameter = m_argv[9];
 
     Random::randomSeed();
@@ -157,7 +158,7 @@ bool CommandParser::Likelihood1D() {
     if (measure=="gofr") {
         GOfRLikelihood* l = new GOfRLikelihood();
         likelihood = dynamic_cast<ParticleLikelihood*>(l);
-        likelihood->setTemperature(5);
+        likelihood->setTemperature(temperature);
     }
     else {
         qDebug() << "ERROR: Must supply either dta or gofr measure!";
@@ -199,12 +200,14 @@ bool CommandParser::Likelihood1D() {
 
 bool CommandParser::FullLikelihood()
 {
-    assertParams(9,m_argc);
+    assertParams(10,m_argc);
     QString measure = m_argv[2];
     QString dataParticleFilename = m_argv[3];
     QString bulkParticleFilename = m_argv[4];
     QString modelFile = m_argv[5];
     QString outFile = m_argv[6];
+    float temperature = (float)QString(m_argv[9]).toFloat();
+
     int noSteps = (int)QString(m_argv[7]).toFloat();
     int noVectors = (int)QString(m_argv[8]).toFloat();
     Random::randomSeed();
@@ -220,7 +223,7 @@ bool CommandParser::FullLikelihood()
     if (measure=="gofr") {
         GOfRLikelihood* l = new GOfRLikelihood();
         likelihood = dynamic_cast<ParticleLikelihood*>(l);
-        likelihood->setTemperature(1);
+        likelihood->setTemperature(temperature);
 
         //l->setNumberOfRandomVectors(noVectors);
     }
